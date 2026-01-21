@@ -1,0 +1,529 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cari Anime - AniMEStream</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;500;600;700;800&family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- ✅ Django static -->
+    <link rel="stylesheet" href="{% static 'styles/search.css' %}">
+</head>
+<body>
+    <!-- Toast Notification -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <header class="header" id="mainHeader">
+        <div class="container header-container">
+            <div class="logo">
+                <a href="{% url 'home' %}">ANI<span class="highlight">ME</span>STREAM</a>
+            </div>
+
+            <nav class="navbar" id="navbar">
+                <ul class="menu">
+                    <li class="menu-item"><a href="{% url 'home' %}">Home</a></li>
+                    <li class="menu-item"><a href="#">Genre</a></li>
+                    <li class="menu-item"><a href="#">Schedule</a></li>
+                    <li class="menu-item"><a href="#">News</a></li>
+                </ul>
+            </nav>
+
+            <div class="header-actions">
+                <!-- ✅ Tombol search tetap button untuk fokus ke input search di halaman ini -->
+                <button class="action-btn search-trigger" id="headerSearchTrigger">
+                    <i class="fas fa-search"></i>
+                </button>
+                
+                <div class="user-profile">
+                    <button class="user-btn" id="userBtn">
+                        <i class="fas fa-user"></i>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="user-info">
+                            <div class="user-avatar">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="user-details">
+                                <span class="user-name">{{ user.username|default:"Guest" }}</span>
+                                <span class="user-status">{% if user.is_authenticated %}Member{% else %}Guest{% endif %}</span>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        {% if user.is_authenticated %}
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-user"></i>
+                            <span>My Profile</span>
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-list"></i>
+                            <span>My List</span>
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-history"></i>
+                            <span>Watch History</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="{% url 'logout' %}" class="dropdown-item logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Log Out</span>
+                        </a>
+                        {% else %}
+                        <a href="{% url 'login' %}" class="dropdown-item">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Login</span>
+                        </a>
+                        <a href="{% url 'register' %}" class="dropdown-item">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Register</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <button class="mobile-toggle" id="mobileToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="search-container">
+        <div class="container">
+
+            <!-- Search Header -->
+            <div class="search-header">
+                <h1 class="page-title">Cari Anime Favoritmu</h1>
+                <p class="page-subtitle">Temukan anime terbaik dari koleksi kami yang lengkap</p>
+                
+                <!-- Main Search Bar -->
+                <div class="main-search-bar">
+                    <div class="search-input-container">
+                        <input type="text" id="mainSearchInput" placeholder="Cari judul anime, karakter, atau genre...">
+                        <button class="search-btn" id="mainSearchBtn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <div class="search-suggestions" id="searchSuggestions">
+                        <!-- Suggestions will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Quick Search Tags -->
+                <div class="quick-search-tags">
+                    <span>Pencarian Cepat:</span>
+                    <div class="tags-container">
+                        <button class="tag" data-search="Action">Action</button>
+                        <button class="tag" data-search="Romance">Romance</button>
+                        <button class="tag" data-search="Fantasy">Fantasy</button>
+                        <button class="tag" data-search="Isekai">Isekai</button>
+                        <button class="tag" data-search="2024">2024</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="search-content">
+                <aside class="filters-sidebar">
+                    <div class="filter-section">
+                        <h3 class="filter-title">Filter Pencarian</h3>
+                        
+                        <!-- Genre Filter -->
+                        <div class="filter-group">
+                            <div class="filter-header">
+                                <h4>Genre</h4>
+                                <button class="filter-toggle" data-target="genre-list">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </div>
+                            <div class="filter-options" id="genre-list">
+                                <div class="filter-option">
+                                    <input type="checkbox" id="action" name="genre" value="Action">
+                                    <label for="action">Action</label>
+                                    <span class="count">128</span>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="adventure" name="genre" value="Adventure">
+                                    <label for="adventure">Adventure</label>
+                                    <span class="count">96</span>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="comedy" name="genre" value="Comedy">
+                                    <label for="comedy">Comedy</label>
+                                    <span class="count">154</span>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="drama" name="genre" value="Drama">
+                                    <label for="drama">Drama</label>
+                                    <span class="count">112</span>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="fantasy" name="genre" value="Fantasy">
+                                    <label for="fantasy">Fantasy</label>
+                                    <span class="count">143</span>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="romance" name="genre" value="Romance">
+                                    <label for="romance">Romance</label>
+                                    <span class="count">98</span>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="sci-fi" name="genre" value="Sci-Fi">
+                                    <label for="sci-fi">Sci-Fi</label>
+                                    <span class="count">76</span>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="slice-of-life" name="genre" value="Slice of Life">
+                                    <label for="slice-of-life">Slice of Life</label>
+                                    <span class="count">67</span>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="supernatural" name="genre" value="Supernatural">
+                                    <label for="supernatural">Supernatural</label>
+                                    <span class="count">89</span>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="horror" name="genre" value="Horror">
+                                    <label for="horror">Horror</label>
+                                    <span class="count">45</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tahun Filter -->
+                        <div class="filter-group">
+                            <div class="filter-header">
+                                <h4>Tahun Rilis</h4>
+                                <button class="filter-toggle" data-target="year-list">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </div>
+                            <div class="filter-options" id="year-list">
+                                <div class="filter-option">
+                                    <input type="checkbox" id="year-2024" name="year" value="2024">
+                                    <label for="year-2024">2024</label>
+                                    <span class="count">24</span>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="year-2023" name="year" value="2023">
+                                    <label for="year-2023">2023</label>
+                                    <span class="count">68</span>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="year-2022" name="year" value="2022">
+                                    <label for="year-2022">2022</label>
+                                    <span class="count">54</span>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="year-2021" name="year" value="2021">
+                                    <label for="year-2021">2021</label>
+                                    <span class="count">47</span>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="year-2020" name="year" value="2020">
+                                    <label for="year-2020">2020</label>
+                                    <span class="count">39</span>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="year-2019" name="year" value="2019">
+                                    <label for="year-2019">2019</label>
+                                    <span class="count">42</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status Filter -->
+                        <div class="filter-group">
+                            <div class="filter-header">
+                                <h4>Status</h4>
+                                <button class="filter-toggle" data-target="status-list">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </div>
+                            <div class="filter-options" id="status-list">
+                                <div class="filter-option">
+                                    <input type="checkbox" id="ongoing" name="status" value="Currently Airing">
+                                    <label for="ongoing">Sedang Tayang</label>
+                                    <span class="count">32</span>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="completed" name="status" value="Finished Airing">
+                                    <label for="completed">Selesai</label>
+                                    <span class="count">421</span>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="upcoming" name="status" value="Upcoming">
+                                    <label for="upcoming">Akan Datang</label>
+                                    <span class="count">15</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rating Filter dengan Slider -->
+                        <div class="filter-group">
+                            <div class="filter-header">
+                                <h4>Rating</h4>
+                                <button class="filter-toggle" data-target="rating-slider">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </div>
+                            <div class="filter-options" id="rating-slider">
+                                <div class="rating-slider-container">
+                                    <div class="rating-display">
+                                        <span class="rating-label">Minimum Rating:</span>
+                                        <span class="rating-value" id="ratingValue">0.0</span>
+                                        <i class="fas fa-star rating-star"></i>
+                                    </div>
+                                    <input type="range" id="ratingSlider" min="0" max="100" value="0" step="1" class="rating-range-slider">
+                                    <div class="rating-scale">
+                                        <span>0.0</span>
+                                        <span>2.5</span>
+                                        <span>5.0</span>
+                                        <span>7.5</span>
+                                        <span>10.0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tipe Filter -->
+                        <div class="filter-group">
+                            <div class="filter-header">
+                                <h4>Tipe</h4>
+                                <button class="filter-toggle" data-target="type-list">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </div>
+                            <div class="filter-options" id="type-list">
+                                <div class="filter-option">
+                                    <input type="checkbox" id="tv" name="type" value="TV">
+                                    <label for="tv">TV Series</label>
+                                    <span class="count">324</span>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="movie" name="type" value="Movie">
+                                    <label for="movie">Movie</label>
+                                    <span class="count">87</span>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="ova" name="type" value="OVA">
+                                    <label for="ova">OVA</label>
+                                    <span class="count">42</span>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="ona" name="type" value="ONA">
+                                    <label for="ona">ONA</label>
+                                    <span class="count">28</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rating Usia Filter -->
+                        <div class="filter-group">
+                            <div class="filter-header">
+                                <h4>Rating Usia</h4>
+                                <button class="filter-toggle" data-target="age-rating-list">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </div>
+                            <div class="filter-options" id="age-rating-list">
+                                <div class="filter-option">
+                                    <input type="checkbox" id="all-ages" name="age-rating" value="All Ages">
+                                    <label for="all-ages">Semua Umur</label>
+                                    <span class="count">187</span>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="pg-13" name="age-rating" value="PG-13">
+                                    <label for="pg-13">13+ (Remaja)</label>
+                                    <span class="count">245</span>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="r-17" name="age-rating" value="R-17+">
+                                    <label for="r-17">17+ (Dewasa Muda)</label>
+                                    <span class="count">156</span>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="r-18" name="age-rating" value="R-18+">
+                                    <label for="r-18">18+ (Dewasa)</label>
+                                    <span class="count">68</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sort Options -->
+                        <div class="filter-group">
+                            <div class="filter-header">
+                                <h4>Urutkan Berdasarkan</h4>
+                            </div>
+                            <div class="filter-options sort-options">
+                                <div class="filter-option">
+                                    <input type="radio" id="sort-recommended" name="sort" value="recommended" {% if user.is_authenticated %}checked{% endif %}>
+                                    <label for="sort-recommended">
+                                        <i class="fas fa-magic"></i> Rekomendasi
+                                        {% if not user.is_authenticated %}<span style="font-size: 0.8em; opacity: 0.6;"> (Login required)</span>{% endif %}
+                                    </label>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="radio" id="sort-age-match" name="sort" value="age-match">
+                                    <label for="sort-age-match">
+                                        <i class="fas fa-user-check"></i> Sesuai Usia
+                                        {% if not user.is_authenticated %}<span style="font-size: 0.8em; opacity: 0.6;"> (Login required)</span>{% endif %}
+                                    </label>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="radio" id="sort-popular" name="sort" value="popular" {% if not user.is_authenticated %}checked{% endif %}>
+                                    <label for="sort-popular"><i class="fas fa-fire"></i> Populer</label>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="radio" id="sort-newest" name="sort" value="newest">
+                                    <label for="sort-newest"><i class="fas fa-clock"></i> Terbaru</label>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="radio" id="sort-rating" name="sort" value="rating">
+                                    <label for="sort-rating"><i class="fas fa-star"></i> Rating Tertinggi</label>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="radio" id="sort-title" name="sort" value="title">
+                                    <label for="sort-title"><i class="fas fa-sort-alpha-down"></i> Judul A-Z</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="filter-actions">
+                            <button class="btn-secondary" id="resetFilters">Reset Filter</button>
+                            <button class="btn-primary" id="applyFilters">Terapkan Filter</button>
+                        </div>
+                    </div>
+                </aside>
+
+                <main class="search-results">
+                    <!-- Results Header -->
+                    <div class="results-header">
+                        <div class="results-info">
+                            <h2 id="hasilPencarianBtn">Hasil Pencarian</h2>
+                            <p class="results-count">Menampilkan <span id="resultsCount">0</span> dari <span id="totalResults">0</span> anime</p>
+                        </div>
+                        <div class="view-options">
+                            <button class="view-option active" data-view="grid" title="Grid View">
+                                <i class="fas fa-th"></i>
+                            </button>
+                            <button class="view-option" data-view="list" title="List View">
+                                <i class="fas fa-list"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Active Filters -->
+                    <div class="active-filters" id="activeFilters">
+                        <!-- Active filters will be populated by JavaScript -->
+                    </div>
+
+                    <!-- No Results State -->
+                    <div class="no-results" id="noResults" style="display: none;">
+                        <div class="no-results-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3>Tidak ada hasil yang ditemukan</h3>
+                        <p>Coba ubah kata kunci pencarian atau filter yang digunakan</p>
+                        <button class="btn-primary" id="resetSearch">Reset Pencarian</button>
+                    </div>
+
+                    <!-- Results Grid -->
+                    <div class="results-grid" id="resultsGrid">
+                        <!-- Anime cards will be populated by JavaScript from API -->
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination">
+                        <button class="pagination-btn prev" disabled>
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <div class="pagination-numbers" id="paginationNumbers">
+                            <!-- Pagination numbers will be populated by JavaScript -->
+                        </div>
+                        <button class="pagination-btn next" disabled>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-bg-graphics"></div>
+        <div class="container">
+            <div class="footer-top">
+                <div class="footer-col brand-col">
+                    <div class="logo">
+                        <a href="{% url 'home' %}">ANI<span class="highlight">ME</span>STREAM</a>
+                    </div>
+                    <p>The premier destination for high-quality anime streaming. Join our community today.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-discord"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-col links-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Our Blog</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Contacts</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col newsletter-col">
+                    <h4>Newsletter</h4>
+                    <p>Subscribe to get the latest updates.</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Your Email...">
+                        <button><i class="fas fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 ANIMESTREAM Inc. All Rights Reserved</p>
+                <a href="#" id="backToTop" class="back-to-top"><i class="fas fa-arrow-up"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ✅ CRITICAL: Global JavaScript variables BEFORE loading search.js -->
+    <script>
+      // API endpoints
+      window.SEARCH_API_URL = "{% url 'api_search' %}";
+      window.WATCH_URL = "{% url 'watch' 0 %}".replace('0/', '');
+      
+      // ✅ Authentication status - VERY IMPORTANT
+      window.IS_AUTHENTICATED = {% if user.is_authenticated %}true{% else %}false{% endif %};
+      
+      console.log('Auth status:', window.IS_AUTHENTICATED); // Debug
+      
+      // Script untuk tombol search di header
+      document.addEventListener('DOMContentLoaded', function() {
+        const headerSearchTrigger = document.getElementById('headerSearchTrigger');
+        const mainSearchInput = document.getElementById('mainSearchInput');
+        
+        if (headerSearchTrigger && mainSearchInput) {
+          headerSearchTrigger.addEventListener('click', function() {
+            mainSearchInput.focus();
+          });
+        }
+      });
+    </script>
+
+    <!-- ✅ Load search.js AFTER global variables are set -->
+    <script src="{% static 'script/search.js' %}"></script>
+</body>
+</html>

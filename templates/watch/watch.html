@@ -1,0 +1,354 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ anime.title }} - AniStream</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;500;600;700;800&family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <link rel="stylesheet" href="{% static 'styles/watch.css' %}">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+</head>
+<body>
+
+  {% include 'partials/header.html' %}
+
+  <!-- Notification Toast -->
+  <div class="notification-toast" id="notificationToast">
+    <i class="fas fa-check-circle"></i>
+    <span id="notificationMessage"></span>
+  </div>
+
+  <!-- ✅ PERBAIKAN: Pastikan semua atribut data dalam satu tag dengan format yang benar -->
+  <div class="watch-container"
+       data-anime-id="{{ anime.id }}"
+       data-anime-title="{{ anime.title }}"
+       data-cover-url="{% static 'images/cover/' %}{{ anime.cover|default:'default.jpg' }}"
+       data-user-rating="{{ user_rating|default:0 }}"
+       data-episode-count="{{ ep_count }}"
+       data-rate-api="{% url 'api_rate_anime' anime.id %}"
+       data-comments-api="{% url 'api_comments' anime.id %}"
+       data-like-api-prefix="/api/comments/">
+    <div class="container">
+      <div class="watch-layout">
+        <div class="video-section">
+
+          <!-- Video Player -->
+          <div class="video-player-container">
+            <div class="video-wrapper">
+              <video id="animeVideo" class="video-player"
+                     poster="{% if anime.wallpaper %}{% static 'images/wallpaper/' %}{{ anime.wallpaper }}{% else %}{% static 'images/cover/' %}{{ anime.cover|default:'default.jpg' }}{% endif %}">
+                <!-- sementara dummy video -->
+                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+
+              <!-- Custom controls -->
+              <div class="custom-controls" id="customControls">
+                <div class="controls-top">
+                  <div class="video-title-info">
+                    <h3 id="videoAnimeTitle">{{ anime.title }}</h3>
+                    <span id="videoEpisodeTitle">
+                      {% if episodes|length > 0 %}
+                        Episode {{ episodes.0.number }}: {{ episodes.0.title }}
+                      {% else %}
+                        Episode 1
+                      {% endif %}
+                    </span>
+                  </div>
+
+                  <div class="controls-top-right">
+                    <div class="settings-container">
+                      <button class="control-btn" id="settingsBtn" title="Settings">
+                        <i class="fas fa-cog"></i>
+                      </button>
+                      <div class="settings-menu" id="settingsMenu">
+                        <div class="menu-item">
+                          <span>Playback Speed</span>
+                          <select id="playbackSpeed">
+                            <option value="0.25">0.25x</option>
+                            <option value="0.5">0.5x</option>
+                            <option value="0.75">0.75x</option>
+                            <option value="1" selected>Normal</option>
+                            <option value="1.25">1.25x</option>
+                            <option value="1.5">1.5x</option>
+                            <option value="2">2x</option>
+                          </select>
+                        </div>
+                        <div class="menu-item">
+                          <span>Autoplay</span>
+                          <label class="toggle-switch">
+                            <input type="checkbox" id="autoplayToggle" checked>
+                            <span class="toggle-slider"></span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="controls-center">
+                  <button class="control-btn play-btn" id="playBtn" title="Play/Pause">
+                    <i class="fas fa-play"></i>
+                  </button>
+                </div>
+
+                <div class="controls-bottom">
+                  <div class="progress-area" id="progressArea">
+                    <input type="range" min="0" max="100" value="0" class="progress-range-slider" id="progressRangeSlider">
+                  </div>
+
+                  <div class="controls-row">
+                    <div class="controls-left">
+                      <button class="control-btn" id="rewindBtn" title="Rewind 10s"><i class="fas fa-backward"></i></button>
+                      <button class="control-btn" id="playPauseBtn" title="Play/Pause"><i class="fas fa-play"></i></button>
+                      <button class="control-btn" id="forwardBtn" title="Forward 10s"><i class="fas fa-forward"></i></button>
+
+                      <div class="volume-container">
+                        <button class="control-btn" id="volumeBtn" title="Mute/Unmute"><i class="fas fa-volume-up"></i></button>
+                        <div class="volume-slider-wrapper">
+                          <input type="range" min="0" max="100" value="80" class="volume-range-slider" id="volumeRangeSlider">
+                        </div>
+                      </div>
+
+                      <div class="time-display">
+                        <span id="currentTime">00:00</span>
+                        <span class="time-separator">/</span>
+                        <span id="duration">00:00</span>
+                      </div>
+                    </div>
+
+                    <div class="controls-right">
+                      <div class="subtitle-container">
+                        <button class="control-btn" id="subtitleBtn" title="Subtitles"><i class="fas fa-closed-captioning"></i></button>
+                        <div class="subtitle-menu" id="subtitleMenu">
+                          <div class="menu-item" data-subtitle="off"><span>Off</span><i class="fas fa-check active"></i></div>
+                          <div class="menu-item" data-subtitle="english"><span>English</span><i class="fas fa-check"></i></div>
+                          <div class="menu-item" data-subtitle="indonesian"><span>Indonesian</span><i class="fas fa-check"></i></div>
+                          <div class="menu-item" data-subtitle="japanese"><span>Japanese</span><i class="fas fa-check"></i></div>
+                        </div>
+                      </div>
+
+                      <div class="quality-container">
+                        <button class="control-btn" id="qualityBtn" title="Quality"><span class="quality-text">1080p</span></button>
+                        <div class="quality-menu" id="qualityMenu">
+                          <div class="menu-item" data-quality="2160p"><span>2160p</span><i class="fas fa-check"></i></div>
+                          <div class="menu-item" data-quality="1080p"><span>1080p</span><i class="fas fa-check active"></i></div>
+                          <div class="menu-item" data-quality="720p"><span>720p</span><i class="fas fa-check"></i></div>
+                          <div class="menu-item" data-quality="480p"><span>480p</span><i class="fas fa-check"></i></div>
+                          <div class="menu-item" data-quality="360p"><span>360p</span><i class="fas fa-check"></i></div>
+                          <div class="menu-item" data-quality="auto"><span>Auto</span><i class="fas fa-check"></i></div>
+                        </div>
+                      </div>
+
+                      <button class="control-btn" id="fullscreenBtn" title="Fullscreen"><i class="fas fa-expand"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Episode Info -->
+          <div class="episode-info-section">
+            <div class="episode-header">
+              <h2>{{ anime.title }}</h2>
+              <div class="episode-meta">
+                <span class="episode-date">Year: {{ anime.year_release }}</span>
+              </div>
+            </div>
+            <div class="episode-description">
+              <p>{{ anime.anime_type }} • {{ anime.status }}</p>
+            </div>
+          </div>
+
+          <!-- Episode Navigation -->
+          <div class="episode-navigation">
+            <div class="nav-header">
+              <h3>Episodes</h3>
+              <div class="episode-filter">
+                <select id="seasonSelect">
+                  <option value="season1">Season 1 ({{ ep_count }} Episodes)</option>
+                </select>
+              </div>
+            </div>
+            
+            <!-- Episode List -->
+            <div class="episode-list" id="episodeList">
+              {% for ep in episodes %}
+                <div class="episode-item {% if forloop.first %}active{% endif %}"
+                     data-episode-number="{{ ep.number }}"
+                     data-episode-title="{{ ep.title|escape }}">
+                  <div class="episode-thumb">
+                    <img src="{% static 'images/cover/' %}{{ anime.cover|default:'default.jpg' }}" alt="Episode {{ ep.number }}">
+                    <div class="episode-number">EP {{ ep.number }}</div>
+                    <div class="episode-duration">{{ ep.duration|default:"24:00" }}</div>
+                  </div>
+                  <div class="episode-info">
+                    <h4>{{ anime.title }}</h4>
+                    <span>Episode {{ ep.number }}: {{ ep.title }}</span>
+                  </div>
+                </div>
+              {% empty %}
+                <div style="opacity:.8">Belum ada data episode untuk anime ini.</div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Comments Section -->
+          <div class="comments-section">
+            <div class="section-header">
+              <h3>Comments</h3>
+              <div class="comments-count">0 Comments</div>
+            </div>
+            <div class="comment-form">
+              <div class="user-avatar"><i class="fas fa-user-circle"></i></div>
+              <div class="comment-input-container">
+                <textarea placeholder="Add a comment..." id="commentInput"></textarea>
+                <div class="comment-actions">
+                  <button class="btn-secondary" id="cancelComment">Cancel</button>
+                  <button class="btn-primary" id="submitComment">Comment</button>
+                </div>
+              </div>
+            </div>
+            <div class="comments-list" id="commentsList">
+              <!-- Comments akan di-load oleh JavaScript -->
+            </div>
+          </div>
+
+        </div>
+
+        <aside class="sidebar-section">
+
+          <!-- Anime Details -->
+          <div class="anime-details-widget">
+            <div class="anime-poster">
+              <img src="{% static 'images/cover/' %}{{ anime.cover|default:'default.jpg' }}" alt="Anime Poster">
+            </div>
+
+            <div class="anime-info">
+              <h2>{{ anime.title }}</h2>
+
+              <div class="anime-meta">
+                <div class="meta-item">
+                  <span class="meta-label">Status:</span>
+                  <span class="meta-value">{{ anime.status }}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Episodes:</span>
+                  <span class="meta-value">{{ anime.total_episode|default:"?" }}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Year:</span>
+                  <span class="meta-value">{{ anime.year_release|default:"-" }}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Type:</span>
+                  <span class="meta-value">{{ anime.anime_type|default:"-" }}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Rating:</span>
+                  <span class="meta-value">
+                    <i class="fas fa-star"></i> {{ anime.total_rating|floatformat:2|default:"N/A" }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- User Rating Section -->
+              <div class="user-rating-section">
+                <h4>Rate This Anime</h4>
+                <div class="rating-slider-container">
+                  <div class="rating-display">
+                    <div class="rating-number" id="ratingNumber">
+                      {% if user_rating %}
+                        {{ user_rating|floatformat:1 }}
+                      {% else %}
+                        0.0
+                      {% endif %}
+                    </div>
+                    <div class="rating-label">/ 10</div>
+                  </div>
+
+                  <!-- Slider 0-100, mapping ke 0.0-10.0 -->
+                  <input type="range" min="0" max="100" 
+                         value="{% if user_rating %}{{ user_rating|floatformat:1 }}{% else %}0{% endif %}"
+                         class="rating-slider" id="ratingSlider">
+
+                  <div class="rating-markers">
+                    <span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span>
+                  </div>
+                </div>
+
+                <div class="rating-text" id="ratingText">
+                  {% if user_rating %}
+                    You rated: {{ user_rating|floatformat:1 }}/10
+                  {% else %}
+                    Drag slider to rate (0.0 - 10.0)
+                  {% endif %}
+                </div>
+
+                <button class="btn-submit-rating" id="btnSubmitRating" 
+                        {% if user_rating %}disabled{% endif %}>
+                  <i class="fas fa-check"></i>
+                  <span>
+                    {% if user_rating %}Rating Submitted{% else %}Submit Rating{% endif %}
+                  </span>
+                </button>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="anime-actions">
+                <button class="btn-favorite" id="btnFavorite">
+                  <i class="far fa-heart"></i><span>Add to Favorite</span>
+                </button>
+                <button class="btn-list" id="btnList">
+                  <i class="fas fa-plus"></i><span>Add to List</span>
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- You Might Also Like -->
+          <div class="recommendations-widget">
+            <h3>You Might Also Like</h3>
+
+            <div class="recommendation-list">
+              {% for item in you_might_also_like %}
+                <a class="recommendation-item" href="{% url 'watch' item.anime.id %}">
+                  <div class="rec-poster">
+                    <img src="{% static 'images/cover/' %}{{ item.anime.cover|default:'default.jpg' }}" alt="Recommendation">
+                  </div>
+                  <div class="rec-info">
+                    <h4>{{ item.anime.title }}</h4>
+                    <span>
+                      {% if item.genres %}
+                        {% for g in item.genres %}
+                          {{ g }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                      {% else %}
+                        Anime
+                      {% endif %}
+                    </span>
+                  </div>
+                </a>
+              {% empty %}
+                <div style="opacity:.8">No recommendations yet.</div>
+              {% endfor %}
+            </div>
+          </div>
+
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  {% include 'partials/footer.html' %}
+
+  <script src="{% static 'script/watch.js' %}"></script>
+</body>
+</html>

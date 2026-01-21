@@ -1,0 +1,87 @@
+<!-- templates/partials/header.html -->
+{% load static %}
+
+<!-- SEARCH OVERLAY (dipakai global) -->
+<div class="search-overlay" id="searchOverlay">
+    <div class="search-close" id="searchClose"><i class="fas fa-times"></i></div>
+    <div class="search-box">
+        <input type="text" placeholder="Type to search anime...">
+        <button><i class="fas fa-search"></i></button>
+    </div>
+    <div class="search-tags">
+        <span>Popular:</span>
+        <a href="#">One Piece</a>
+        <a href="#">Naruto</a>
+        <a href="#">Demon Slayer</a>
+        <a href="#">Jujutsu Kaisen</a>
+    </div>
+</div>
+
+<header class="header" id="mainHeader">
+    <div class="container header-container">
+        <div class="logo">
+            <a href="{% url 'home' %}">ANI<span class="highlight">ME</span>STREAM</a>
+        </div>
+
+        <nav class="navbar" id="navbar">
+            <ul class="menu">
+                <li class="menu-item active"><a href="{% url 'home' %}">Home</a></li>
+                <li class="menu-item"><a href="#">Genre</a></li>
+                <li class="menu-item"><a href="#">Schedule</a></li>
+                <li class="menu-item"><a href="#">News</a></li>
+            </ul>
+        </nav>
+
+        <div class="header-actions">
+            <!-- 🔴 PERUBAHAN: Tombol search sekarang link ke halaman search -->
+            <a class="action-btn search-trigger" href="{% url 'search_page' %}">
+                <i class="fas fa-search"></i>
+            </a>
+
+            <div class="user-profile">
+                <button class="user-btn" id="userBtn">
+                    <i class="fas fa-user"></i>
+                </button>
+                <div class="user-dropdown" id="userDropdown">
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="user-details">
+                            <span class="user-name" id="userName">{{ request.user.username }}</span>
+                            <span class="user-status">Premium Member</span>
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item" onclick="return false;">
+                        <i class="fas fa-user"></i>
+                        <span>My Profile</span>
+                    </a>
+                    <a href="#" class="dropdown-item" onclick="return false;">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                    <a href="#" class="dropdown-item" onclick="return false;">
+                        <i class="fas fa-list"></i>
+                        <span>My List</span>
+                    </a>
+                    <a href="#" class="dropdown-item" onclick="return false;">
+                        <i class="fas fa-history"></i>
+                        <span>Watch History</span>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="{% url 'logout' %}" class="dropdown-item logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Log Out</span>
+                    </a>
+                </div>
+            </div>
+
+            <button class="mobile-toggle" id="mobileToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </div>
+</header>

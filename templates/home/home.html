@@ -1,0 +1,341 @@
+<!-- templates/home/home.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AniStream - Ultimate Anime Experience</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;500;600;700;800&family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="{% static 'styles/home.css' %}">
+</head>
+<body>
+
+    <!-- PRELOADER -->
+    <div id="preloader">
+        <div class="loader-container">
+            <div class="loader-logo">ANI<span class="me">ME</span>STREAM</div>
+            <div class="progress-bar-wrap">
+                <div class="progress-bar" id="loader-progress"></div>
+            </div>
+            <div class="loading-text" id="loadingText">Initializing Core Systems...</div>
+        </div>
+    </div>
+
+    <!-- HEADER + SEARCH OVERLAY -->
+    {% include 'partials/header.html' %}
+
+    <section class="hero-section">
+        <div class="hero-bg-container" id="heroBgContainer"></div>
+        <div class="hero-overlay-gradient"></div>
+
+        <div class="container hero-content-wrapper">
+            <!-- A) DYNAMIC HERO SLIDER -->
+            <div class="hero-slider" id="heroSlider">
+
+                {% for h in hero_items %}
+                <div class="hero-slide {% if forloop.first %}active{% endif %}"
+                     data-bg="{% static 'images/' %}{{ h.bg_kind }}/{{ h.bg_file }}"
+                     data-anime="{{ h.anime.title }}">
+                    <div class="slide-info">
+                        <div class="slide-meta fade-up">
+                            <span class="badge quality">{{ h.label }}</span>
+                            <span class="badge genre">{{ h.badge_genre }}</span>
+                            <span class="badge year">{{ h.anime.year_release }}</span>
+                        </div>
+
+                        <h1 class="slide-title fade-up delay-100">
+                            {{ h.anime.title }}
+                        </h1>
+
+                        <p class="slide-desc fade-up delay-200">
+                            {{ h.anime.type }} • {{ h.anime.status }} • ⭐ {{ h.anime.total_rating }}
+                        </p>
+
+                        <div class="slide-buttons fade-up delay-300">
+                            <a href="#" class="btn-primary" onclick="return false;"><i class="fas fa-play"></i> Watch Now</a>
+                            <button class="btn-secondary btn-add-list">
+                                <i class="fas fa-plus"></i>
+                                <span class="btn-text">Add to List</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="slide-cover fade-up delay-300">
+                        <div class="cover-glow"></div>
+                        <img src="{% static 'images/cover/' %}{{ h.anime.cover }}" alt="Cover">
+                    </div>
+                </div>
+                {% endfor %}
+
+            </div>
+
+            <div class="slider-controls">
+                <div class="slider-arrow prev" id="sliderPrev"><i class="fas fa-chevron-left"></i></div>
+                <div class="slider-dots" id="sliderDots"></div>
+                <div class="slider-arrow next" id="sliderNext"><i class="fas fa-chevron-right"></i></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="main-content">
+        <div class="container">
+            <div class="content-layout">
+
+                <div class="content-primary">
+                    <!-- RECOMMENDED FOR YOU -->
+                    <div class="section-header scroll-reveal">
+                        <div class="title-wrapper">
+                            <h2 class="section-title">Recommended for You</h2>
+                            <div class="title-line"></div>
+                        </div>
+                        <a href="#" class="view-all-btn" onclick="return false;">View All <i class="fas fa-arrow-right"></i></a>
+                    </div>
+
+                    <!-- ✅ FINAL: Genre Terpisah + Tanpa Deskripsi -->
+                    <div class="anime-grid">
+                        {% for rec in recommendations|slice:":6" %}
+                            <div class="anime-card scroll-reveal">
+                                <!-- ✅ UBAH LINK INI -->
+                                <a href="{% url 'watch' rec.anime.id %}" class="card-link">
+                                    <div class="card-poster">
+                                        <img src="{% static 'images/cover/' %}{{ rec.anime.cover }}" alt="Poster">
+                                        <div class="card-overlay">
+                                            <div class="play-indicator">
+                                                <i class="fas fa-play"></i>
+                                                <span>Watch Now</span>
+                                            </div>
+                                        </div>
+                                        <div class="card-badges">
+                                            <span class="ep-badge">
+                                                {% if rec.anime.total_episode %}EP {{ rec.anime.total_episode }}{% else %}EP ?{% endif %}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="card-detail">
+                                        <h3 class="anime-title">{{ rec.anime.title }}</h3>
+
+                                        <!-- ✅ GENRE BADGES TERPISAH (dari backend as list) -->
+                                        <div class="genre-badges-bottom">
+                                            {% for genre in rec.genres %}
+                                                <span class="genre-badge">{{ genre|upper }}</span>
+                                            {% endfor %}
+                                        </div>
+
+                                        <div class="anime-meta">
+                                            <span class="year-badge"><i class="fas fa-calendar"></i> {{ rec.anime.year_release }}</span>
+                                            <span><i class="fas fa-star"></i> {{ rec.predicted_rating }}</span>
+                                        </div>
+
+                                        <!-- ✅ TANPA DESKRIPSI/REASON -->
+
+                                        <div class="card-actions">
+                                            <button class="action-icon-btn list-btn" title="Add to List">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                            <button class="action-icon-btn favorite-btn" title="Add to Favorites">
+                                                <i class="far fa-heart"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        {% empty %}
+                            <p style="opacity:.8">Belum ada rekomendasi. Silakan beri rating minimal 3 anime.</p>
+                        {% endfor %}
+                    </div>
+
+                    <!-- B) TRENDING NOW -->
+                    <div class="section-header scroll-reveal">
+                        <div class="title-wrapper">
+                            <h2 class="section-title">Trending Now</h2>
+                            <div class="title-line"></div>
+                        </div>
+                        <a href="#" class="view-all-btn" onclick="return false;">View All <i class="fas fa-arrow-right"></i></a>
+                    </div>
+
+                    <div class="anime-grid">
+                        {% for rec in trending %}
+                            <div class="anime-card scroll-reveal">
+                                <!-- ✅ UBAH LINK INI -->
+                                <a href="{% url 'watch' rec.anime.id %}" class="card-link">
+                                    <div class="card-poster">
+                                        <img src="{% static 'images/cover/' %}{{ rec.anime.cover }}" alt="Poster">
+                                        <div class="card-overlay">
+                                            <div class="play-indicator">
+                                                <i class="fas fa-play"></i>
+                                                <span>Watch Now</span>
+                                            </div>
+                                        </div>
+                                        <div class="card-badges">
+                                            <span class="ep-badge">
+                                                {% if rec.anime.total_episode %}EP {{ rec.anime.total_episode }}{% else %}EP ?{% endif %}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="card-detail">
+                                        <h3 class="anime-title">{{ rec.anime.title }}</h3>
+
+                                        <div class="genre-badges-bottom">
+                                            {% for genre in rec.genres %}
+                                                <span class="genre-badge">{{ genre|upper }}</span>
+                                            {% endfor %}
+                                        </div>
+
+                                        <div class="anime-meta">
+                                            <span class="year-badge"><i class="fas fa-calendar"></i> {{ rec.anime.year_release }}</span>
+                                            <span><i class="fas fa-star"></i> {{ rec.predicted_rating }}</span>
+                                        </div>
+
+                                        <div class="card-actions">
+                                            <button class="action-icon-btn list-btn" title="Add to List">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                            <button class="action-icon-btn favorite-btn" title="Add to Favorites">
+                                                <i class="far fa-heart"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        {% empty %}
+                            <p style="opacity:.8">Belum ada data trending.</p>
+                        {% endfor %}
+                    </div>
+
+                    <!-- C) NEW RELEASES -->
+                    <div class="section-header scroll-reveal">
+                        <div class="title-wrapper">
+                            <h2 class="section-title">New Releases</h2>
+                            <div class="title-line"></div>
+                        </div>
+                        <a href="#" class="view-all-btn" onclick="return false;">View All <i class="fas fa-arrow-right"></i></a>
+                    </div>
+
+                    <div class="anime-grid">
+                        {% for rec in new_releases %}
+                            <div class="anime-card scroll-reveal">
+                                <!-- ✅ UBAH LINK INI -->
+                                <a href="{% url 'watch' rec.anime.id %}" class="card-link">
+                                    <div class="card-poster">
+                                        <img src="{% static 'images/cover/' %}{{ rec.anime.cover }}" alt="Poster">
+                                        <div class="card-overlay">
+                                            <div class="play-indicator">
+                                                <i class="fas fa-play"></i>
+                                                <span>Watch Now</span>
+                                            </div>
+                                        </div>
+                                        <div class="card-badges">
+                                            <span class="ep-badge">
+                                                {% if rec.anime.total_episode %}EP {{ rec.anime.total_episode }}{% else %}EP ?{% endif %}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="card-detail">
+                                        <h3 class="anime-title">{{ rec.anime.title }}</h3>
+
+                                        <div class="genre-badges-bottom">
+                                            {% for genre in rec.genres %}
+                                                <span class="genre-badge">{{ genre|upper }}</span>
+                                            {% endfor %}
+                                        </div>
+
+                                        <div class="anime-meta">
+                                            <span class="year-badge"><i class="fas fa-calendar"></i> {{ rec.anime.year_release }}</span>
+                                            <span><i class="fas fa-star"></i> {{ rec.predicted_rating }}</span>
+                                        </div>
+
+                                        <div class="card-actions">
+                                            <button class="action-icon-btn list-btn" title="Add to List">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                            <button class="action-icon-btn favorite-btn" title="Add to Favorites">
+                                                <i class="far fa-heart"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        {% empty %}
+                            <p style="opacity:.8">Belum ada data rilis terbaru.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <aside class="content-sidebar">
+
+                    <div class="widget scroll-reveal">
+                        <div class="widget-header">
+                            <h4>Top Views</h4>
+                            <div class="widget-nav">
+                                <span class="active" data-timeframe="day">Day</span>
+                                <span data-timeframe="week">Week</span>
+                                <span data-timeframe="month">Month</span>
+                            </div>
+                        </div>
+                        <div class="widget-content" id="topViewsContent"></div>
+                        <div class="widget-pagination">
+                            <button class="pagination-btn prev-btn" id="topViewsPrev" disabled>
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="pagination-btn next-btn" id="topViewsNext">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="widget scroll-reveal">
+                        <div class="widget-header">
+                            <h4>Today</h4>
+                            <a href="#" class="view-all-link" onclick="return false;">View All <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                        <div class="widget-content" id="todayContent"></div>
+                        <div class="widget-pagination">
+                            <button class="pagination-btn prev-btn" id="todayPrev" disabled>
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="pagination-btn next-btn" id="todayNext">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="widget scroll-reveal">
+                        <div class="widget-header">
+                            <h4>Genres</h4>
+                            <a href="#" class="view-all-link" onclick="return false;">View All <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                        <div class="tag-cloud">
+                            <a href="#" onclick="return false;">Action</a>
+                            <a href="#" onclick="return false;">Magic</a>
+                            <a href="#" onclick="return false;">Adventure</a>
+                            <a href="#" onclick="return false;">Comedy</a>
+                            <a href="#" onclick="return false;">Romance</a>
+                            <a href="#" onclick="return false;">Slice of Life</a>
+                            <a href="#" onclick="return false;">Mecha</a>
+                            <a href="#" onclick="return false;">Psychological</a>
+                            <a href="#" onclick="return false;">Horror</a>
+                            <a href="#" onclick="return false;">Fantasy</a>
+                            <a href="#" onclick="return false;">Sci-Fi</a>
+                            <a href="#" onclick="return false;">Drama</a>
+                        </div>
+                    </div>
+
+                </aside>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    {% include 'partials/footer.html' %}
+
+    <script src="{% static 'script/home.js' %}"></script>
+</body>
+</html>
