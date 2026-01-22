@@ -66,8 +66,8 @@ python manage.py createsuperuser
 Letakkan file Excel di root project (sejajar dengan `manage.py`):
 - `Tabel_Anime.xlsx`
 - `Data_setelah_pra-processing.xlsx`
-- `Tabel Akun User.xlsx` (optional)
-- `Rating Anime User.xlsx` (optional)
+- `Tabel Akun User.xlsx`
+- `Rating Anime User.xlsx`
 
 **Import Anime:**
 ```bash
