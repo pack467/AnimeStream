@@ -22,7 +22,7 @@ Panduan instalasi project **AniMEStream** (Django) dari awal hingga siap digunak
 
 ### 1. Clone Repository
 ```bash
-git clone <repo-url>
+git clone https://github.com/pack467/AnimeStream.git
 cd animestream
 ```
 
