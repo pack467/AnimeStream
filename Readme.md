@@ -10,10 +10,10 @@ Panduan instalasi project **AniMEStream** (Django) dari awal hingga siap digunak
 
 ## 📋 Requirements
 
-- **Python 3.11 (Disarankan)**
-- **Git bash**
+- **Python 3.11** (Disarankan)
+- **Git Bash**
 - **MySQL**
-- **Dbeaver/Navicat**
+- **DBeaver** / **Navicat** (Database client)
 - **Visual Studio Code**
 
 ---
@@ -23,7 +23,7 @@ Panduan instalasi project **AniMEStream** (Django) dari awal hingga siap digunak
 ### 1. Clone Repository
 ```bash
 git clone https://github.com/pack467/AnimeStream.git
-cd animestream
+cd AnimeStream
 ```
 
 ### 2. Setup Virtual Environment
@@ -63,6 +63,12 @@ python manage.py createsuperuser
 
 ### 6. Import Data dari Excel
 
+Letakkan file Excel di root project (sejajar dengan `manage.py`):
+- `Tabel_Anime.xlsx`
+- `Data_setelah_pra-processing.xlsx`
+- `Tabel Akun User.xlsx` (optional)
+- `Rating Anime User.xlsx` (optional)
+
 **Import Anime:**
 ```bash
 python manage.py import_excel_to_db --mode meta --file "Tabel_Anime.xlsx"
@@ -71,6 +77,16 @@ python manage.py import_excel_to_db --mode meta --file "Tabel_Anime.xlsx"
 **Import Ratings:**
 ```bash
 python manage.py import_excel_to_db --mode ratings --file "Data_setelah_pra-processing.xlsx" --create-users
+```
+
+**Import Users:**
+```bash
+python manage.py import_excel_to_db --mode users --file "Tabel Akun User.xlsx"
+```
+
+**Import Ratings:**
+```bash
+python manage.py import_excel_to_db --mode ratings --file "Rating Anime User.xlsx" --create-users
 ```
 
 ### 7. Run Server
