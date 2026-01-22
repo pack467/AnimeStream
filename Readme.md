@@ -106,21 +106,6 @@ animestream/
 
 ---
 
-## 🔧 Troubleshooting
-
-### TemplateDoesNotExist Error
-Pastikan file template ada di `templates/pages/search.html`
-
-### API Search Error (500)
-Periksa field model `Anime`:
-- Gunakan `year_release` (bukan `year`)
-- Gunakan `total_episode` (bukan `episodes`)
-
-### Genre Filter Tidak Akurat
-Field `genre` berupa string CSV. Pastikan query menggunakan regex atau split-compare.
-
----
-
 ## 📝 Important URLs
 
 - **Search Page:** `/search/`
