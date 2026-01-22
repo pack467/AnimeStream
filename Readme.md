@@ -10,9 +10,11 @@ Panduan instalasi project **AniMEStream** (Django) dari awal hingga siap digunak
 
 ## 📋 Requirements
 
-- **Python 3.11+**
-- **Git**
-- **SQLite** (default, tidak perlu install)
+- **Python 3.11 (Disarankan)**
+- **Git bash**
+- **MySQL**
+- **Dbeaver/Navicat**
+- **Visual Studio Code**
 
 ---
 
