@@ -1,15 +1,17 @@
-# main/urls.py
 from django.urls import path
 from . import views
 from . import views_widgets
 from . import views_comments
-from . import views_search  # ✅ Tambahkan import untuk views_search
+from . import views_search
 
 urlpatterns = [
     path("home/", views.home, name="home"),
 
-    # ✅ SEARCH PAGE + API (pastikan menggunakan views_search)
+    # ✅ SEARCH PAGE + API
     path("search/", views_search.search_page, name="search_page"),
+    path("search/recommended/", views_search.search_recommended, name="search_recommended"),
+    path("search/trending/", views_search.search_trending, name="search_trending"),
+    path("search/new/", views_search.search_new, name="search_new"),
     path("api/search/", views_search.api_search, name="api_search"),
 
     # ✅ WATCH PAGE

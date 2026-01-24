@@ -88,13 +88,14 @@
 
                 <div class="content-primary">
                     <!-- RECOMMENDED FOR YOU -->
-                    <div class="section-header scroll-reveal">
-                        <div class="title-wrapper">
-                            <h2 class="section-title">Recommended for You</h2>
-                            <div class="title-line"></div>
-                        </div>
-                        <a href="#" class="view-all-btn" onclick="return false;">View All <i class="fas fa-arrow-right"></i></a>
-                    </div>
+                     <div class="section-header scroll-reveal">
+    <div class="title-wrapper">
+        <h2 class="section-title">Recommended for You</h2>
+        <div class="title-line"></div>
+    </div>
+    <a href="{% url 'search_recommended' %}" class="view-all-btn">View All <i class="fas fa-arrow-right"></i></a>
+</div>
+
 
                     <!-- ✅ FINAL: Genre Terpisah + Tanpa Deskripsi -->
                     <div class="anime-grid">
@@ -151,13 +152,13 @@
                     </div>
 
                     <!-- B) TRENDING NOW -->
-                    <div class="section-header scroll-reveal">
-                        <div class="title-wrapper">
-                            <h2 class="section-title">Trending Now</h2>
-                            <div class="title-line"></div>
-                        </div>
-                        <a href="#" class="view-all-btn" onclick="return false;">View All <i class="fas fa-arrow-right"></i></a>
-                    </div>
+<div class="section-header scroll-reveal">
+    <div class="title-wrapper">
+        <h2 class="section-title">Trending Now</h2>
+        <div class="title-line"></div>
+    </div>
+    <a href="{% url 'search_trending' %}" class="view-all-btn">View All <i class="fas fa-arrow-right"></i></a>
+</div>
 
                     <div class="anime-grid">
                         {% for rec in trending %}
@@ -210,13 +211,13 @@
                     </div>
 
                     <!-- C) NEW RELEASES -->
-                    <div class="section-header scroll-reveal">
-                        <div class="title-wrapper">
-                            <h2 class="section-title">New Releases</h2>
-                            <div class="title-line"></div>
-                        </div>
-                        <a href="#" class="view-all-btn" onclick="return false;">View All <i class="fas fa-arrow-right"></i></a>
-                    </div>
+<div class="section-header scroll-reveal">
+    <div class="title-wrapper">
+        <h2 class="section-title">New Releases</h2>
+        <div class="title-line"></div>
+    </div>
+    <a href="{% url 'search_new' %}" class="view-all-btn">View All <i class="fas fa-arrow-right"></i></a>
+</div>
 
                     <div class="anime-grid">
                         {% for rec in new_releases %}

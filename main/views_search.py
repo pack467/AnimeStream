@@ -4,6 +4,7 @@ Search Views dengan dukungan:
 1. Normal Search (text, filters, sorting)
 2. SVD Recommendations Mode (sort=recommended)
 3. Age-Match Mode (sort=age-match)
+4. View All Routes (recommended, trending, new)
 """
 
 from django.shortcuts import render
@@ -21,8 +22,46 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def search_page(request):
-    """Render halaman search utama"""
-    return render(request, "pages/search.html")
+    """Render halaman search utama dengan default sort = title (A-Z)"""
+    context = {
+        "default_sort": "title",  # Default A-Z
+        "section_title": ""
+    }
+    print(f"🔍 search_page context: {context}")
+    return render(request, "pages/search.html", context)
+
+
+@login_required
+def search_recommended(request):
+    """Render halaman search dengan filter Recommended"""
+    context = {
+        "default_sort": "recommended",
+        "section_title": "Recommended for You"
+    }
+    print(f"🎯 search_recommended context: {context}")
+    return render(request, "pages/search.html", context)
+
+
+@login_required
+def search_trending(request):
+    """Render halaman search dengan filter Trending/Popular"""
+    context = {
+        "default_sort": "popular",
+        "section_title": "Trending Now"
+    }
+    print(f"🔥 search_trending context: {context}")
+    return render(request, "pages/search.html", context)
+
+
+@login_required
+def search_new(request):
+    """Render halaman search dengan filter New Releases"""
+    context = {
+        "default_sort": "newest",
+        "section_title": "New Releases"
+    }
+    print(f"🆕 search_new context: {context}")
+    return render(request, "pages/search.html", context)
 
 
 def _split_csv_param(request, key: str):
@@ -126,7 +165,7 @@ def api_search(request):
     q_text = (request.GET.get("q") or "").strip()
     page = int(request.GET.get("page") or 1)
     per_page = int(request.GET.get("per_page") or 12)
-    sort = (request.GET.get("sort") or "popular").strip()
+    sort = (request.GET.get("sort") or "title").strip()  # ✅ Default A-Z
     min_rating = float(request.GET.get("min_rating") or 0)
 
     genres = _split_csv_param(request, "genres")
@@ -367,9 +406,11 @@ def api_search(request):
         qs_list.sort(key=lambda a: float(a.total_rating or 0), reverse=True)
     elif sort == "title":
         qs_list.sort(key=lambda a: (a.title or "").lower())
-    else:
-        # popular default
+    elif sort == "popular":
         qs_list.sort(key=lambda a: float(a.total_rating or 0), reverse=True)
+    else:
+        # Default A-Z
+        qs_list.sort(key=lambda a: (a.title or "").lower())
 
     paginator = Paginator(qs_list, per_page)
     p = paginator.get_page(page)

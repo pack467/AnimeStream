@@ -6,6 +6,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const API_URL = window.SEARCH_API_URL || "/api/search/";
   const WATCH_BASE = window.WATCH_URL || "/watch/";
   const IS_AUTHENTICATED = window.IS_AUTHENTICATED || false;
+  const DEFAULT_SORT = window.DEFAULT_SORT || "popular";  // ✅ Dynamic dari template
+  const SECTION_TITLE = window.SECTION_TITLE || "";      // ✅ Dynamic section title
+
+  console.log('✅ Search initialized with default sort:', DEFAULT_SORT);
 
   /* ==================================================
      1. STATE
@@ -14,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
     q: "",
     page: 1,
     per_page: 12,
-    sort: "popular",
+    sort: DEFAULT_SORT,  // ✅ Gunakan default dinamis
     view: "grid",
     min_rating: 0.0,
     filters: {
@@ -130,8 +134,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function normalizeSort(val) {
-    // ✅ Biarkan semua nilai sort dikirim ke API
-    return val || "popular";
+    // ✅ Biarkan semua nilai sort dikirim ke API, gunakan default jika kosong
+    return val || DEFAULT_SORT;
   }
 
   /* ==================================================
@@ -233,6 +237,8 @@ document.addEventListener("DOMContentLoaded", () => {
     state.total_pages = json.total_pages || 1;
     state.lastResults = json.results || [];
 
+    console.log(`📊 Rendering ${state.lastResults.length} results for sort: ${state.sort}`);
+
     if (el.resultsCount) el.resultsCount.textContent = String(state.lastResults.length);
     if (el.totalResults) el.totalResults.textContent = String(state.total);
 
@@ -248,15 +254,21 @@ document.addEventListener("DOMContentLoaded", () => {
     if (el.noResults) el.noResults.style.display = "none";
     el.resultsGrid.style.display = "";
 
-    // ✅ Tampilkan indikator berdasarkan jenis sort
+    // ✅ Update header berdasarkan SECTION_TITLE atau jenis sort
     const header = document.querySelector(".results-header h2");
     if (header) {
-      if (state.sort === "recommended" && IS_AUTHENTICATED) {
+      if (SECTION_TITLE) {
+        header.textContent = SECTION_TITLE;
+        console.log('📌 Header set to section title:', SECTION_TITLE);
+      } else if (state.sort === "recommended" && IS_AUTHENTICATED) {
         header.innerHTML = `<i class="fas fa-magic"></i> Recommended for You`;
+        console.log('📌 Header set to: Recommended');
       } else if (state.sort === "age-match" && IS_AUTHENTICATED) {
         header.innerHTML = `<i class="fas fa-user-check"></i> Age-Appropriate Anime`;
+        console.log('📌 Header set to: Age-Appropriate');
       } else {
         header.innerHTML = `Hasil Pencarian`;
+        console.log('📌 Header set to: Hasil Pencarian');
       }
     }
 
@@ -387,7 +399,7 @@ document.addEventListener("DOMContentLoaded", () => {
     state.filters.age = Array.from(document.querySelectorAll('input[name="age-rating"]:checked')).map(cb => cb.value);
 
     const selectedSort = document.querySelector('input[name="sort"]:checked');
-    state.sort = normalizeSort(selectedSort?.value || "popular");
+    state.sort = normalizeSort(selectedSort?.value || DEFAULT_SORT);
   }
 
   /* ==================================================
@@ -464,9 +476,9 @@ document.addEventListener("DOMContentLoaded", () => {
           "error"
         );
         
-        state.sort = "popular";
-        const popularRadio = document.querySelector('input[name="sort"][value="popular"]');
-        if (popularRadio) popularRadio.checked = true;
+        state.sort = DEFAULT_SORT;
+        const defaultRadio = document.querySelector(`input[name="sort"][value="${DEFAULT_SORT}"]`);
+        if (defaultRadio) defaultRadio.checked = true;
         
         syncActiveFilters();
       }
@@ -599,10 +611,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (el.ratingSlider) el.ratingSlider.value = 0;
       if (el.ratingValue) el.ratingValue.textContent = "0.0";
 
-      let defaultSort = IS_AUTHENTICATED ? "recommended" : "popular";
-      const defSort = document.querySelector(`input[name="sort"][value="${defaultSort}"]`);
+      // ✅ Gunakan DEFAULT_SORT sebagai default
+      const defSort = document.querySelector(`input[name="sort"][value="${DEFAULT_SORT}"]`);
       if (defSort) defSort.checked = true;
-      state.sort = defaultSort;
+      state.sort = DEFAULT_SORT;
 
       state.filters = { genre: [], year: [], status: [], type: [], age: [] };
       state.page = 1;
@@ -624,7 +636,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ==================================================
-     13. AUTO APPLY ON CHANGE (NEW)
+     13. AUTO APPLY ON CHANGE
   ================================================== */
   function initAutoApplyOnChange() {
     document.querySelectorAll('.filters-sidebar input[type="checkbox"]').forEach(cb => {
@@ -737,10 +749,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (el.ratingSlider) el.ratingSlider.value = 0;
       if (el.ratingValue) el.ratingValue.textContent = "0.0";
 
-      let defaultSort = IS_AUTHENTICATED ? "recommended" : "popular";
-      const defSort = document.querySelector(`input[name="sort"][value="${defaultSort}"]`);
+      // ✅ Gunakan DEFAULT_SORT sebagai default
+      const defSort = document.querySelector(`input[name="sort"][value="${DEFAULT_SORT}"]`);
       if (defSort) defSort.checked = true;
-      state.sort = defaultSort;
+      state.sort = DEFAULT_SORT;
 
       syncActiveFilters();
       doSearch({ scroll: true });
@@ -775,7 +787,17 @@ document.addEventListener("DOMContentLoaded", () => {
      18. INIT REKOMENDASI & AGE-MATCH
   ================================================== */
   function initRecommendationUI() {
-    // ✅ Disable "Rekomendasi" jika belum login
+    // ✅ Set default sort radio PERTAMA sesuai dengan DEFAULT_SORT
+    console.log('🔧 Setting default sort radio to:', DEFAULT_SORT);
+    const defaultRadio = document.querySelector(`input[name="sort"][value="${DEFAULT_SORT}"]`);
+    if (defaultRadio) {
+      defaultRadio.checked = true;
+      console.log('✅ Radio button set:', defaultRadio.value);
+    } else {
+      console.warn('⚠️ Radio button not found for:', DEFAULT_SORT);
+    }
+
+    // Disable recommended & age-match jika belum login
     if (!IS_AUTHENTICATED && el.recommendedRadio) {
       el.recommendedRadio.disabled = true;
       const label = el.recommendedRadio.closest("label");
@@ -786,7 +808,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // ✅ Disable "Sesuai Usia" jika belum login
     if (!IS_AUTHENTICATED && el.ageMatchRadio) {
       el.ageMatchRadio.disabled = true;
       const label = el.ageMatchRadio.closest("label");
@@ -796,22 +817,13 @@ document.addEventListener("DOMContentLoaded", () => {
         label.title = "Login to see age-appropriate recommendations";
       }
     }
-
-    // ✅ Set default sort
-    if (!state.sort) {
-      state.sort = IS_AUTHENTICATED ? "recommended" : "popular";
-      const defaultRadio = document.querySelector(`input[name="sort"][value="${state.sort}"]`);
-      if (defaultRadio) defaultRadio.checked = true;
-    }
   }
 
   /* ==================================================
      19. FAVORITE & ADD TO LIST HANDLERS
   ================================================== */
   function initCardActions() {
-    // Event delegation untuk button yang di-generate dinamis
     document.addEventListener('click', function(e) {
-      // Add to List button
       if (e.target.closest('.add-to-list')) {
         e.preventDefault();
         e.stopPropagation();
@@ -824,7 +836,6 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
         
-        // Toggle icon
         const icon = btn.querySelector('i');
         if (icon.classList.contains('fa-plus')) {
           icon.classList.remove('fa-plus');
@@ -838,11 +849,9 @@ document.addEventListener("DOMContentLoaded", () => {
           showToast("Removed from List", "Anime dihapus dari list Anda", "success");
         }
         
-        // TODO: Implement actual API call to save to user's list
         console.log('Add to list:', animeId);
       }
       
-      // Add to Favorite button
       if (e.target.closest('.add-to-favorite')) {
         e.preventDefault();
         e.stopPropagation();
@@ -855,7 +864,6 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
         
-        // Toggle icon
         const icon = btn.querySelector('i');
         if (icon.classList.contains('far')) {
           icon.classList.remove('far');
@@ -869,7 +877,6 @@ document.addEventListener("DOMContentLoaded", () => {
           showToast("Removed from Favorites", "Anime dihapus dari favorit Anda", "success");
         }
         
-        // TODO: Implement actual API call to save to user's favorites
         console.log('Add to favorite:', animeId);
       }
     });
@@ -879,22 +886,31 @@ document.addEventListener("DOMContentLoaded", () => {
      20. INIT
   ================================================== */
   function init() {
+    console.log('🚀 Initializing search page...');
+    console.log('   Default Sort:', DEFAULT_SORT);
+    
     initHeaderUI();
     initFilterUI();
     initViewToggle();
     initQuickTags();
     initSearchEvents();
     initPaginationEvents();
+    
+    // ✅ PENTING: Init recommendation UI DULU (set radio button)
     initRecommendationUI();
-    initCardActions();  // ✅ Initialize card action handlers
-
+    
+    initCardActions();
     initAutoApplyOnChange();
 
+    // ✅ Baca filters dari UI (termasuk radio yang sudah di-set)
     readFiltersFromUI();
     syncActiveFilters();
 
+    console.log('   State after init:', state.sort);
+    
+    // Load data
     doSearch();
-    console.log("Search page ready (DB-driven with age-match support).");
+    console.log("✅ Search page ready with sort:", state.sort);
   }
 
   init();

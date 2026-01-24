@@ -101,7 +101,13 @@
 
             <!-- Search Header -->
             <div class="search-header">
-                <h1 class="page-title">Cari Anime Favoritmu</h1>
+                <h1 class="page-title">
+                    {% if section_title %}
+                        {{ section_title }}
+                    {% else %}
+                        Cari Anime Favoritmu
+                    {% endif %}
+                </h1>
                 <p class="page-subtitle">Temukan anime terbaik dari koleksi kami yang lengkap</p>
                 
                 <!-- Main Search Bar -->
@@ -364,33 +370,39 @@
                             </div>
                             <div class="filter-options sort-options">
                                 <div class="filter-option">
-                                    <input type="radio" id="sort-recommended" name="sort" value="recommended" {% if user.is_authenticated %}checked{% endif %}>
+                                    <input type="radio" id="sort-recommended" name="sort" value="recommended" 
+                                           {% if default_sort == 'recommended' %}checked{% endif %}>
                                     <label for="sort-recommended">
                                         <i class="fas fa-magic"></i> Rekomendasi
                                         {% if not user.is_authenticated %}<span style="font-size: 0.8em; opacity: 0.6;"> (Login required)</span>{% endif %}
                                     </label>
                                 </div>
                                 <div class="filter-option">
-                                    <input type="radio" id="sort-age-match" name="sort" value="age-match">
+                                    <input type="radio" id="sort-age-match" name="sort" value="age-match" 
+                                           {% if default_sort == 'age-match' %}checked{% endif %}>
                                     <label for="sort-age-match">
                                         <i class="fas fa-user-check"></i> Sesuai Usia
                                         {% if not user.is_authenticated %}<span style="font-size: 0.8em; opacity: 0.6;"> (Login required)</span>{% endif %}
                                     </label>
                                 </div>
                                 <div class="filter-option">
-                                    <input type="radio" id="sort-popular" name="sort" value="popular" {% if not user.is_authenticated %}checked{% endif %}>
+                                    <input type="radio" id="sort-popular" name="sort" value="popular" 
+                                           {% if default_sort == 'popular' %}checked{% endif %}>
                                     <label for="sort-popular"><i class="fas fa-fire"></i> Populer</label>
                                 </div>
                                 <div class="filter-option">
-                                    <input type="radio" id="sort-newest" name="sort" value="newest">
+                                    <input type="radio" id="sort-newest" name="sort" value="newest" 
+                                           {% if default_sort == 'newest' %}checked{% endif %}>
                                     <label for="sort-newest"><i class="fas fa-clock"></i> Terbaru</label>
                                 </div>
                                 <div class="filter-option">
-                                    <input type="radio" id="sort-rating" name="sort" value="rating">
+                                    <input type="radio" id="sort-rating" name="sort" value="rating" 
+                                           {% if default_sort == 'rating' %}checked{% endif %}>
                                     <label for="sort-rating"><i class="fas fa-star"></i> Rating Tertinggi</label>
                                 </div>
                                 <div class="filter-option">
-                                    <input type="radio" id="sort-title" name="sort" value="title">
+                                    <input type="radio" id="sort-title" name="sort" value="title" 
+                                           {% if default_sort == 'title' %}checked{% endif %}>
                                     <label for="sort-title"><i class="fas fa-sort-alpha-down"></i> Judul A-Z</label>
                                 </div>
                             </div>
@@ -505,10 +517,17 @@
       window.SEARCH_API_URL = "{% url 'api_search' %}";
       window.WATCH_URL = "{% url 'watch' 0 %}".replace('0/', '');
       
-      // ✅ Authentication status - VERY IMPORTANT
+      // ✅ Authentication status
       window.IS_AUTHENTICATED = {% if user.is_authenticated %}true{% else %}false{% endif %};
       
-      console.log('Auth status:', window.IS_AUTHENTICATED); // Debug
+      // ✅ Default sort dari backend (PENTING!)
+      window.DEFAULT_SORT = "{{ default_sort|default:'title' }}";
+      window.SECTION_TITLE = "{{ section_title|default:'' }}";
+      
+      console.log('🎯 Page Config:');
+      console.log('  - Auth:', window.IS_AUTHENTICATED);
+      console.log('  - Default Sort:', window.DEFAULT_SORT);
+      console.log('  - Section Title:', window.SECTION_TITLE);
       
       // Script untuk tombol search di header
       document.addEventListener('DOMContentLoaded', function() {
