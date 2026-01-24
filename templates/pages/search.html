@@ -370,6 +370,11 @@
                             </div>
                             <div class="filter-options sort-options">
                                 <div class="filter-option">
+                                    <input type="radio" id="sort-title" name="sort" value="title" 
+                                           {% if default_sort == 'title' %}checked{% endif %}>
+                                    <label for="sort-title"><i class="fas fa-sort-alpha-down"></i> Judul A-Z</label>
+                                </div>
+                                <div class="filter-option">
                                     <input type="radio" id="sort-recommended" name="sort" value="recommended" 
                                            {% if default_sort == 'recommended' %}checked{% endif %}>
                                     <label for="sort-recommended">
@@ -399,11 +404,6 @@
                                     <input type="radio" id="sort-rating" name="sort" value="rating" 
                                            {% if default_sort == 'rating' %}checked{% endif %}>
                                     <label for="sort-rating"><i class="fas fa-star"></i> Rating Tertinggi</label>
-                                </div>
-                                <div class="filter-option">
-                                    <input type="radio" id="sort-title" name="sort" value="title" 
-                                           {% if default_sort == 'title' %}checked{% endif %}>
-                                    <label for="sort-title"><i class="fas fa-sort-alpha-down"></i> Judul A-Z</label>
                                 </div>
                             </div>
                         </div>
